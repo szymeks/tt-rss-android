@@ -106,11 +106,11 @@ android {
 }
 
 // Copies each assembled APK to build/outputs/apk-timestamped/<variant>/ with the build
-// time in its name, e.g. org.fox.ttrss-debug-2026-10-05_19-42.apk. The original APK
+// time in its name, e.g. org.fox.ttrss-debug-2026-10-05_19-42-07.apk. The original APK
 // is left in place (CI relies on its path).
 androidComponents {
     onVariants(selector().all()) { variant ->
-        def stamp = buildTime.format('yyyy-MM-dd_HH-mm')
+        def stamp = buildTime.format('yyyy-MM-dd_HH-mm-ss')
         def copyTask = tasks.register("copy${variant.name.capitalize()}TimestampedApk", Copy) {
             from(variant.artifacts.get(SingleArtifact.APK.INSTANCE)) {
                 include '*.apk'
