@@ -1,5 +1,10 @@
+import com.android.build.api.artifact.SingleArtifact
+
 apply plugin: 'com.android.application'
 apply plugin: 'net.ltgt.errorprone'
+
+// shared by BuildConfig.TIMESTAMP and the timestamped APK file name
+def buildTime = new Date()
 
 android {
     compileOptions {
@@ -9,7 +14,7 @@ android {
 
     defaultConfig {
         applicationId = "org.fox.ttrss"
-        buildConfigField "long", "TIMESTAMP", System.currentTimeMillis() + "L"
+        buildConfigField "long", "TIMESTAMP", buildTime.time + "L"
         minSdkVersion 24
         //noinspection ExpiredTargetSdkVersion
         targetSdkVersion 36
@@ -97,6 +102,25 @@ android {
         checkReleaseBuilds = false
         disable 'MissingTranslation', 'ExtraTranslation', 'MissingQuantity', 'ImpliedQuantity'
         enable 'SuspiciousIndentation'
+    }
+}
+
+// Copies each assembled APK to build/outputs/apk-timestamped/<variant>/ with the build
+// time in its name, e.g. org.fox.ttrss-debug-2026-10-05_19-42.apk. The original APK
+// is left in place (CI relies on its path).
+androidComponents {
+    onVariants(selector().all()) { variant ->
+        def stamp = buildTime.format('yyyy-MM-dd_HH-mm')
+        def copyTask = tasks.register("copy${variant.name.capitalize()}TimestampedApk", Copy) {
+            from(variant.artifacts.get(SingleArtifact.APK.INSTANCE)) {
+                include '*.apk'
+            }
+            into layout.buildDirectory.dir("outputs/apk-timestamped/${variant.name}")
+            rename '(.*)\\.apk', "\$1-${stamp}.apk"
+        }
+        tasks.matching { it.name == "assemble${variant.name.capitalize()}" }.configureEach {
+            finalizedBy copyTask
+        }
     }
 }
 
