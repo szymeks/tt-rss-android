@@ -39,7 +39,7 @@
     <LinearLayout
         android:layout_weight="1"
         android:orientation="vertical"
-        android:layout_width="match_parent"
+        android:layout_width="0dp"
         android:layout_height="wrap_content">
 
         <TextView
@@ -79,19 +79,22 @@
     <LinearLayout
         android:orientation="vertical"
         android:layout_weight="0"
-        android:layout_width="48dp"
+        android:layout_width="wrap_content"
+        android:minWidth="48dp"
+        android:layout_marginStart="8dp"
         android:layout_height="match_parent">
 
         <TextView
             android:id="@+id/date"
-            android:layout_width="match_parent"
+            android:layout_width="wrap_content"
+            android:layout_gravity="end"
             android:layout_height="wrap_content"
             android:fontFamily="sans-serif-light"
             android:singleLine="true"
             android:ellipsize="none"
             android:textAlignment="viewEnd"
             android:layout_weight="0.5"
-            tools:text="Jan 01"
+            tools:text="Jan 01, 12:00"
             android:textColor="?colorSecondary"
             android:textSize="12sp"
             />

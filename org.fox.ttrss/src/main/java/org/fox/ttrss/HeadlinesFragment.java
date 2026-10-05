@@ -583,6 +583,33 @@ public class HeadlinesFragment extends androidx.fragment.app.Fragment {
         model.startLoading(append, m_feed, m_activity.getResizeWidth());
     }
 
+    /** Headline date label: time only for today's articles, date and time for older ones. */
+    static String formatHeadlineDate(long updated, long nowMillis, Locale locale, TimeZone timeZone) {
+        Date d = new Date(updated * 1000L);
+        long half_a_year_ago = nowMillis / 1000L - 182 * 24 * 60 * 60;
+
+        Calendar nowCal = Calendar.getInstance(timeZone, locale);
+        nowCal.setTimeInMillis(nowMillis);
+        Calendar dCal = Calendar.getInstance(timeZone, locale);
+        dCal.setTime(d);
+
+        String pattern;
+
+        if (nowCal.get(Calendar.YEAR) == dCal.get(Calendar.YEAR)
+                && nowCal.get(Calendar.MONTH) == dCal.get(Calendar.MONTH)
+                && nowCal.get(Calendar.DAY_OF_MONTH) == dCal.get(Calendar.DAY_OF_MONTH)) {
+            pattern = "HH:mm";
+        } else if (updated > half_a_year_ago) {
+            pattern = "MMM dd, HH:mm";
+        } else {
+            pattern = "MMM dd yyyy, HH:mm";
+        }
+
+        DateFormat df = new SimpleDateFormat(pattern, locale);
+        df.setTimeZone(timeZone);
+        return df.format(d);
+    }
+
     static class ArticleViewHolder extends RecyclerView.ViewHolder {
         public View view;
 
@@ -1300,28 +1327,8 @@ public class HeadlinesFragment extends androidx.fragment.app.Fragment {
             if (holder.dateView != null) {
                 holder.dateView.setTextSize(TypedValue.COMPLEX_UNIT_SP, m_headlineSmallFontSize);
 
-                Date d = new Date((long) article.updated * 1000);
-                Date now = new Date();
-                long half_a_year_ago = now.getTime() / 1000L - 182 * 24 * 60 * 60;
-
-                DateFormat df;
-
-                Calendar nowCal = Calendar.getInstance();
-                Calendar dCal = Calendar.getInstance();
-                dCal.setTime(d);
-
-                if (nowCal.get(Calendar.YEAR) == dCal.get(Calendar.YEAR)
-                        && nowCal.get(Calendar.MONTH) == dCal.get(Calendar.MONTH)
-                        && nowCal.get(Calendar.DAY_OF_MONTH) == dCal.get(Calendar.DAY_OF_MONTH)) {
-                    df = new SimpleDateFormat("HH:mm", Locale.getDefault(Locale.Category.FORMAT));
-                } else if (article.updated > half_a_year_ago) {
-                    df = new SimpleDateFormat("MMM dd", Locale.getDefault(Locale.Category.FORMAT));
-                } else {
-                    df = new SimpleDateFormat("MMM yyyy", Locale.getDefault(Locale.Category.FORMAT));
-                }
-
-                df.setTimeZone(TimeZone.getDefault());
-                holder.dateView.setText(df.format(d));
+                holder.dateView.setText(formatHeadlineDate(article.updated, System.currentTimeMillis(),
+                        Locale.getDefault(Locale.Category.FORMAT), TimeZone.getDefault()));
             }
         }
 
