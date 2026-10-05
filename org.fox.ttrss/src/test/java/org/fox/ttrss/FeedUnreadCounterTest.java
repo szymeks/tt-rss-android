@@ -80,9 +80,30 @@ public class FeedUnreadCounterTest {
     }
 
     @Test
-    public void setUnreadIgnoresUnknownArticles() {
+    public void setUnreadOnUnseenArticleAssumesStateChanged() {
         counter.setUnread(99, false);
-        assertEquals(5, counter.getUnread());
+        assertEquals(4, counter.getUnread());
+
+        // later appearing in the list keeps the assumed initial state
+        counter.update(feed, Collections.singletonList(article(99, false)));
+        assertEquals(4, counter.getUnread());
+    }
+
+    @Test
+    public void setUnreadTwiceCountsOnce() {
+        counter.update(feed, Collections.singletonList(article(1, true)));
+        counter.setUnread(1, false);
+        counter.setUnread(1, false);
+
+        assertEquals(4, counter.getUnread());
+    }
+
+    @Test
+    public void setUnreadIgnoredWithoutFeed() {
+        counter.setFeed(null);
+        counter.setUnread(1, false);
+
+        assertEquals(0, counter.getUnread());
     }
 
     @Test

@@ -1013,6 +1013,15 @@ public class OnlineActivity extends CommonActivity {
     }
 
     public void setArticlesField(final List<Article> articles, int field, int mode) {
+        // update the toolbar counter right away instead of waiting for the API response;
+        // also covers articles no longer in the list (e.g. swiped away)
+        if (field == Article.UPDATE_FIELD_UNREAD && (mode == Article.UPDATE_SET_TRUE || mode == Article.UPDATE_SET_FALSE)) {
+            for (Article a : articles)
+                Application.getFeedUnreadCounter().setUnread(a.id, mode == Article.UPDATE_SET_TRUE);
+
+            updateTitle();
+        }
+
         ApiRequest req = new ApiRequest(getApplicationContext()) {
             @Override
             protected void onPostExecute(JsonElement result) {
@@ -1072,7 +1081,6 @@ public class OnlineActivity extends CommonActivity {
                         if (BuildConfig.DEBUG)
                             Log.d(TAG, "updating article: " + articleClone);
 
-                        // also covers articles no longer in the list (e.g. swiped away)
                         if (field == Article.UPDATE_FIELD_UNREAD)
                             Application.getFeedUnreadCounter().setUnread(articleClone.id, articleClone.unread);
 
