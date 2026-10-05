@@ -41,6 +41,7 @@ public class ArticleModel extends AndroidViewModel implements ApiCommon.ApiCalle
     private String m_lastErrorMessage;
     private ApiCommon.ApiError m_lastError;
     private Feed m_feed;
+    private Feed m_articlesFeed;
     private int m_firstId;
     private String m_searchQuery = "";
     private boolean m_firstIdChanged;
@@ -73,6 +74,11 @@ public class ArticleModel extends AndroidViewModel implements ApiCommon.ApiCalle
 
     public LiveData<List<Article>> getArticles() {
         return m_articles;
+    }
+
+    /** Feed the current article list was loaded for. */
+    public Feed getArticlesFeed() {
+        return m_articlesFeed;
     }
 
     public void update(@NonNull Article article) {
@@ -318,6 +324,7 @@ public class ArticleModel extends AndroidViewModel implements ApiCommon.ApiCalle
                     Log.d(TAG, "loaded headlines=" + completedArticles.size() +
                             " resultingLocalSize=" + merged.size() +
                             " lazyLoadEnabled=" + m_lazyLoadEnabled);
+                    m_articlesFeed = feed;
                     m_articles.setValue(merged);
                 }
                 m_lastUpdate.setValue(System.currentTimeMillis());

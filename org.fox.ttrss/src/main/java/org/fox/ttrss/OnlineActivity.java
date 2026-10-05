@@ -214,6 +214,11 @@ public class OnlineActivity extends CommonActivity {
         model.getActive().observe(this, (articles) -> {
             invalidateOptionsMenu();
         });
+
+        model.getArticles().observe(this, (articles) -> {
+            Application.getFeedUnreadCounter().update(model.getArticlesFeed(), articles);
+            updateTitle();
+        });
     }
 
     public void login() {
@@ -773,8 +778,10 @@ public class OnlineActivity extends CommonActivity {
             loginSuccess(false);
         }
 
-        if (m_activeFeed != null)
-            setTitle(m_activeFeed.title);
+        if (m_activeFeed != null) {
+            Application.getFeedUnreadCounter().setFeed(m_activeFeed);
+            updateTitle();
+        }
 
     }
 
@@ -935,6 +942,11 @@ public class OnlineActivity extends CommonActivity {
         ApiRequest req = new ApiRequest(getApplicationContext()) {
             @Override
             protected void onPostExecute(JsonElement result) {
+                if (result != null && "all".equals(mode) && searchQuery.isEmpty()) {
+                    Application.getFeedUnreadCounter().clear(feed);
+                    updateTitle();
+                }
+
                 if (refreshAfter)
                     refresh();
             }
@@ -1388,6 +1400,12 @@ public class OnlineActivity extends CommonActivity {
     }
 
 
+    protected void updateTitle() {
+        if (m_activeFeed != null)
+            setTitle(FeedUnreadCounter.formatTitle(m_activeFeed.title,
+                    Application.getFeedUnreadCounter().getUnread()));
+    }
+
     public Feed getActiveFeed() {
         return m_activeFeed;
     }
@@ -1395,7 +1413,8 @@ public class OnlineActivity extends CommonActivity {
     public void setActiveFeed(Feed feed) {
         m_activeFeed = feed;
 
-        setTitle(feed.title);
+        Application.getFeedUnreadCounter().setFeed(feed);
+        updateTitle();
 
         FeedsFragment ff = (FeedsFragment) getSupportFragmentManager().findFragmentByTag(FRAG_FEEDS);
 

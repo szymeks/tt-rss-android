@@ -44,6 +44,7 @@ public class Application extends android.app.Application {
     public LinkedHashMap<String, String> m_customSortModes = new LinkedHashMap<>();
     ConnectivityManager m_cmgr;
     ArticleModel m_articleModel;
+    final FeedUnreadCounter m_feedUnreadCounter = new FeedUnreadCounter();
 
     public static Application getInstance() {
         return m_singleton;
@@ -55,6 +56,10 @@ public class Application extends android.app.Application {
 
     public static ArticleModel getArticlesModel() {
         return getInstance().m_articleModel;
+    }
+
+    static FeedUnreadCounter getFeedUnreadCounter() {
+        return getInstance().m_feedUnreadCounter;
     }
 
     @Override
