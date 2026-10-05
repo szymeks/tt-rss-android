@@ -64,6 +64,28 @@ public class FeedUnreadCounterTest {
     }
 
     @Test
+    public void swipedArticleMarkedReadAfterRemovalFromList() {
+        counter.update(feed, Arrays.asList(article(1, true), article(2, true)));
+        // swipe removes the article from the list before the server confirms the read state
+        counter.update(feed, Collections.singletonList(article(2, true)));
+        assertEquals(5, counter.getUnread());
+
+        counter.setUnread(1, false);
+        assertEquals(4, counter.getUnread());
+
+        // undo
+        counter.setUnread(1, true);
+        counter.update(feed, Arrays.asList(article(1, true), article(2, true)));
+        assertEquals(5, counter.getUnread());
+    }
+
+    @Test
+    public void setUnreadIgnoresUnknownArticles() {
+        counter.setUnread(99, false);
+        assertEquals(5, counter.getUnread());
+    }
+
+    @Test
     public void ignoresListLoadedForAnotherFeed() {
         counter.update(feed(11, false, 0), Arrays.asList(article(1, true), article(2, true),
                 article(3, true), article(4, true), article(5, true), article(6, true)));

@@ -56,6 +56,12 @@ final class FeedUnreadCounter {
         }
     }
 
+    /** Records a read state change of an already seen article, even if it was removed from the list. */
+    void setUnread(int articleId, boolean unread) {
+        if (m_initialUnread.containsKey(articleId))
+            m_lastUnread.put(articleId, unread);
+    }
+
     int getUnread() {
         int count = m_base;
 

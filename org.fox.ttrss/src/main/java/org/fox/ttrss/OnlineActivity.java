@@ -1072,9 +1072,14 @@ public class OnlineActivity extends CommonActivity {
                         if (BuildConfig.DEBUG)
                             Log.d(TAG, "updating article: " + articleClone);
 
+                        // also covers articles no longer in the list (e.g. swiped away)
+                        if (field == Article.UPDATE_FIELD_UNREAD)
+                            Application.getFeedUnreadCounter().setUnread(articleClone.id, articleClone.unread);
+
                         model.update(articleClone);
                     }
 
+                    updateTitle();
                     invalidateOptionsMenu();
 
                     return;
