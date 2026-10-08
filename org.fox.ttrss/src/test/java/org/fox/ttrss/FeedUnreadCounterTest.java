@@ -1,6 +1,7 @@
 package org.fox.ttrss;
 
 import static org.junit.Assert.assertEquals;
+import static org.junit.Assert.assertNull;
 
 import org.fox.ttrss.types.Article;
 import org.fox.ttrss.types.Feed;
@@ -191,6 +192,59 @@ public class FeedUnreadCounterTest {
         counter.setFeed(null);
         counter.update(feed, Collections.singletonList(article(1, true)));
 
+        assertEquals(0, counter.getUnread());
+    }
+
+    @Test
+    public void refreshFromUpdatesBaseFromServer() {
+        counter.update(feed, Arrays.asList(article(1, true), article(2, true)));
+
+        Feed fresh = counter.refreshFrom(Arrays.asList(feed(3, false, 1), feed(10, false, 8)));
+
+        assertEquals(8, fresh.unread);
+        assertEquals(8, counter.getUnread());
+    }
+
+    @Test
+    public void refreshFromDropsLocalChangesAlreadyCountedByServer() {
+        counter.update(feed, Arrays.asList(article(1, true), article(2, true)));
+        counter.setUnread(1, false);
+        assertEquals(4, counter.getUnread());
+
+        counter.refreshFrom(Collections.singletonList(feed(10, false, 4)));
+        assertEquals(4, counter.getUnread());
+
+        // refreshed headlines re-seed the article states
+        counter.update(feed, Arrays.asList(article(1, false), article(2, true)));
+        assertEquals(4, counter.getUnread());
+
+        counter.setUnread(2, false);
+        assertEquals(3, counter.getUnread());
+    }
+
+    @Test
+    public void refreshFromSameValueStillResets() {
+        counter.update(feed, Collections.singletonList(article(1, true)));
+        counter.setUnread(1, false);
+        assertEquals(4, counter.getUnread());
+
+        // a new article arrived on the server
+        counter.refreshFrom(Collections.singletonList(feed(10, false, 5)));
+        assertEquals(5, counter.getUnread());
+    }
+
+    @Test
+    public void refreshFromIgnoresListWithoutTrackedFeed() {
+        assertNull(counter.refreshFrom(Arrays.asList(feed(3, false, 1), feed(10, true, 9))));
+        assertNull(counter.refreshFrom(null));
+        assertEquals(5, counter.getUnread());
+    }
+
+    @Test
+    public void refreshFromWithoutTrackedFeed() {
+        counter.setFeed(null);
+
+        assertNull(counter.refreshFrom(Collections.singletonList(feed(10, false, 8))));
         assertEquals(0, counter.getUnread());
     }
 

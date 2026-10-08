@@ -40,6 +40,25 @@ final class FeedUnreadCounter {
             reset(0);
     }
 
+    /**
+     * Takes the server counter of the tracked feed from a freshly loaded feed list.
+     * The server already reflects local read state changes, so tracking starts over.
+     * Returns the matching feed, or null if the list does not contain it.
+     */
+    Feed refreshFrom(List<Feed> feeds) {
+        if (m_feed == null || feeds == null)
+            return null;
+
+        for (Feed feed : feeds) {
+            if (m_feed.equals(feed)) {
+                reset(feed.unread);
+                return feed;
+            }
+        }
+
+        return null;
+    }
+
     /** Records read state of articles; ignored unless the list was loaded for the tracked feed. */
     void update(Feed articlesFeed, List<Article> articles) {
         if (m_feed == null || articles == null || !m_feed.equals(articlesFeed))

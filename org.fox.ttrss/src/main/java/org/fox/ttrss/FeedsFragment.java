@@ -269,6 +269,15 @@ public class FeedsFragment extends Fragment implements OnSharedPreferenceChangeL
         feedsWork.add(new Feed(Feed.TYPE_SETTINGS, getString(R.string.preferences), true));
 
         m_adapter.submitList(feedsWork);
+
+        // keep the toolbar unread count in sync with the refreshed server counter
+        Feed fresh = Application.getFeedUnreadCounter().refreshFrom(feedsWork);
+        Feed active = m_activity.getActiveFeed();
+
+        if (fresh != null && active != null) {
+            active.unread = fresh.unread;
+            m_activity.updateTitle();
+        }
     }
 
     @Override
